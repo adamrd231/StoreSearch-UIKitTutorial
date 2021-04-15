@@ -7,14 +7,24 @@
 
 import UIKit
 
+// MARK: Main - Search View Controller
 class SearchViewController: UIViewController {
 
     // Additional Options for after view loaded
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        
+        // Create and register SearchResultCell Nib
+        var cellNib = UINib(nibName: TableView.CellIdentifiers.searchResultCell, bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.searchResultCell)
+        // Create and register NothingFoundCell Nib
+        cellNib = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
+        tableView.register(cellNib, forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
+        
+        tableView.rowHeight = 80
     }
 
+    //: MARK: Variables
     // Variables connected to storyboard
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
@@ -23,39 +33,50 @@ class SearchViewController: UIViewController {
     var searchResults = [SearchResult]()
     var userHasSearched = false
     
+    // Constants for cell identifiers
+    struct TableView {
+        struct CellIdentifiers {
+            static let searchResultCell = "SearchResultCell"
+            static let nothingFoundCell = "NothingFoundCell"
+        }
+    }
+    
 }
 
+
+// MARK: SearchBar View Controller
 extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
       searchResults = []
         
     if searchBar.text! != "Justin" {
-        
     // Fake Search Result to populate queries with data
       for i in 0...2 {
         let searchResult = SearchResult()
-        searchResult.name = "Fake search result for \(searchResult.name)"
-        searchResult.artistName = "\(searchBar.text!)"
+        searchResult.name = "Fake search result for \(i)"
+        searchResult.artistName = "Search bar result: \(searchBar.text!)"
         searchResults.append(searchResult)
-        
       }
     }
-    userHasSearched = true
-    tableView.reloadData()
+        userHasSearched = true
+        tableView.reloadData()
         searchBar.resignFirstResponder()
-    }
+}
     
     func position(for bar: UIBarPositioning) -> UIBarPosition {
         return .topAttached
     }
-   
 }
 
+
+// MARK: Table View Controller
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     // Update the number of rows in the tableview
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if searchResults.count == 0 {
+        if !userHasSearched {
+            return 0
+        } else if searchResults.count == 0 {
             return 1
         } else {
             return searchResults.count
@@ -63,38 +84,34 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     // Update what the cell inside of a specific row looks like
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath
+    func tableView(
+      _ tableView: UITableView,
+      cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let cellIdentifier = "SearchResultCell"
-        var cell: UITableViewCell! = tableView.dequeueReusableCell(withIdentifier: cellIdentifier)
-        
-            // Check if cell is empty, if yes then create a default cell to work with
-            if cell == nil {
-                cell = UITableViewCell(style: .default, reuseIdentifier: cellIdentifier)
-            }
-            // check if data array is empty, and if user has searched yet, display following
-            if searchResults.count == 0 && userHasSearched == false {
-                cell.detailTextLabel?.text = ""
-            // If Data array is empty after search display following
-            } else if searchResults.count == 0 {
-                cell.textLabel!.text = "Nothing Found"
-            // If data array has objects then show me the money!
-            } else {
-                let searchResult = searchResults[indexPath.row]
-                cell.textLabel!.text = searchResult.name
-                cell.detailTextLabel?.text = searchResult.artistName
-            }
+      if searchResults.count == 0 {
+        return tableView.dequeueReusableCell(
+          withIdentifier: TableView.CellIdentifiers.nothingFoundCell,
+          for: indexPath)
+      } else {
+        let cell = tableView.dequeueReusableCell(withIdentifier:
+          TableView.CellIdentifiers.searchResultCell,
+          for: indexPath) as! SearchResultCell
+
+        let searchResult = searchResults[indexPath.row]
+        cell.nameLabel.text = searchResult.name
+        cell.artistNameLabel.text = searchResult.artistName
         return cell
+      }
     }
-    
+
+    // Update how the tableview will handle selections
     func tableView(
       _ tableView: UITableView,
       didSelectRowAt indexPath: IndexPath
     ) {
       tableView.deselectRow(at: indexPath, animated: true)
     }
-      
+    
     func tableView(
       _ tableView: UITableView,
       willSelectRowAt indexPath: IndexPath
