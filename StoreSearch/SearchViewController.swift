@@ -40,6 +40,18 @@ class SearchViewController: UIViewController {
     // Variables connected to storyboard
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    // MARK: Outlets
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+        performSearch()
+        print("Changed segmented controller to \(sender.selectedSegmentIndex)")
+    }
+    
+    
+    
+    var dataTask: URLSessionDataTask?
+    
     
     // Global Variables for project
     var searchResults = [SearchResult]()
@@ -56,22 +68,20 @@ class SearchViewController: UIViewController {
     }
     
     // MARK: Helper Functions
-    func iTunesURL(searchText: String) -> URL {
+    func iTunesURL(searchText: String, category: Int) -> URL {
+        let kind: String
+        switch category {
+        case 1: kind = "musicTrack"
+        case 2: kind = "software"
+        case 3: kind = "ebook"
+        default: kind = ""
+        }
         let encodedText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        let urlString = "https://itunes.apple.com/search?term=\(encodedText)&limit=200"
+        let urlString = "https://itunes.apple.com/search?term=\(encodedText)&limit=100&entity=\(kind)"
         let url = URL(string: urlString)
         return url!
     }
     
-    func performStoreRequest(with url: URL) -> Data? {
-        do {
-            return try Data(contentsOf: url)
-        } catch {
-            print("Download Error: \(error.localizedDescription)")
-            showNetworkError()
-            return nil
-        }
-    }
     
     func parse(data: Data) -> [SearchResult] {
         do {
@@ -83,6 +93,7 @@ class SearchViewController: UIViewController {
             return []
         }
     }
+    
     
     func showNetworkError() {
         let alert = UIAlertController(
@@ -100,33 +111,64 @@ class SearchViewController: UIViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        performSearch()
+    }
+    
+
 }
 
 
 // MARK: SearchBar View Controller
 extension SearchViewController: UISearchBarDelegate {
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    func performSearch() {
         if !searchBar.text!.isEmpty {
+            // Close text input
+            searchBar.resignFirstResponder()
             // Mark if user has searched or not
             userHasSearched = true
+            // Cancel any current searches before starting the next one
+            dataTask?.cancel()
+            // Update is Loading Variable
+            isLoading = true
             // Clear the search results array for new searching
             searchResults = []
-            searchBar.resignFirstResponder()
-            let queue = DispatchQueue.global()
-            let url = self.iTunesURL(searchText: searchBar.text!)
             
-            queue.async {
-                if let data = self.performStoreRequest(with: url) {
-                    self.searchResults = self.parse(data: data)
-                    self.searchResults.sort(by: <)
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.tableView.reloadData()
-                    }
+            let url = iTunesURL(searchText: searchBar.text!, category: segmentedControl.selectedSegmentIndex)
+            let session = URLSession.shared
+            
+            // Completion Handler for gathering data
+            dataTask = session.dataTask(with: url) {data, response, error in
+                if let error = error as NSError?, error.code == -999 {
+                    print("Search was cancelled")
                     return
+                } else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    if let data = data {
+                        self.searchResults = self.parse(data: data)
+                        self.searchResults.sort(by: <)
+                        
+                        // Use the main thread to update UI
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.tableView.reloadData()
+                        }
+                        
+                        return
+                    }
+                } else {
+                    // Update the UI if errors occured
+                    DispatchQueue.main.async {
+                      self.userHasSearched = false
+                      self.isLoading = false
+                      self.tableView.reloadData()
+                      self.showNetworkError()
+                    }
                 }
+                
             }
             
+            dataTask?.resume()
         }
         
         
@@ -183,14 +225,8 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Pull up the current searchResult Cell to modify
         let searchResult = searchResults[indexPath.row]
-        
-        cell.nameLabel.text = searchResult.name
-        // Check if there is artist information in the cell
-        if searchResult.artist.isEmpty {
-            cell.artistNameLabel.text = ""
-        } else {
-            cell.artistNameLabel.text = "\(searchResult.artist), (\(searchResult.type))"
-        }
+        // Configure current cell with function in SearchResult.Swift
+        cell.configure(for: searchResult)
         return cell
       }
     }

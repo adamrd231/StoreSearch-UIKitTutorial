@@ -25,8 +25,28 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="OdU-bd-hL2"/>
                                 </connections>
                             </searchBar>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Po8-Qz-TP8">
+                                <rect key="frame" x="0.0" y="100" width="414" height="44"/>
+                                <items>
+                                    <barButtonItem style="plain" id="DUI-wO-DVq">
+                                        <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="F5f-x3-v1m">
+                                            <rect key="frame" x="20" y="5.5" width="374" height="33"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <segments>
+                                                <segment title="Al"/>
+                                                <segment title="Music"/>
+                                                <segment title="Software"/>
+                                                <segment title="E-Books"/>
+                                            </segments>
+                                            <connections>
+                                                <action selector="segmentChanged:" destination="BYZ-38-t0r" eventType="valueChanged" id="iSt-pP-Ok7"/>
+                                            </connections>
+                                        </segmentedControl>
+                                    </barButtonItem>
+                                </items>
+                            </toolbar>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="sbk-rC-JiD">
-                                <rect key="frame" x="0.0" y="100" width="414" height="796"/>
+                                <rect key="frame" x="0.0" y="144" width="414" height="752"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <connections>
                                     <outlet property="dataSource" destination="BYZ-38-t0r" id="N5k-U6-Z6Y"/>
@@ -38,16 +58,20 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="sbk-rC-JiD" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="5W0-1A-zqk"/>
-                            <constraint firstItem="sbk-rC-JiD" firstAttribute="top" secondItem="gqP-Xg-9Zs" secondAttribute="bottom" id="Gy3-ln-2w0"/>
+                            <constraint firstItem="sbk-rC-JiD" firstAttribute="top" secondItem="Po8-Qz-TP8" secondAttribute="bottom" id="6hK-WW-m9o"/>
                             <constraint firstAttribute="bottom" secondItem="sbk-rC-JiD" secondAttribute="bottom" id="UuW-gJ-pg6"/>
                             <constraint firstItem="sbk-rC-JiD" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="d96-TH-4D8"/>
                             <constraint firstItem="gqP-Xg-9Zs" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="feO-0s-fiQ"/>
                             <constraint firstItem="gqP-Xg-9Zs" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="gKh-Fp-CvJ"/>
+                            <constraint firstItem="Po8-Qz-TP8" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="hSD-pM-u0f"/>
+                            <constraint firstItem="Po8-Qz-TP8" firstAttribute="top" secondItem="gqP-Xg-9Zs" secondAttribute="bottom" id="iDL-qP-p6r"/>
                             <constraint firstItem="gqP-Xg-9Zs" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="p4d-zi-Ydt"/>
+                            <constraint firstItem="Po8-Qz-TP8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="rJ4-Ml-jas"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="searchBar" destination="gqP-Xg-9Zs" id="4SX-wU-TLL"/>
+                        <outlet property="segmentedControl" destination="F5f-x3-v1m" id="2HP-A7-vZV"/>
                         <outlet property="tableView" destination="sbk-rC-JiD" id="nAE-P8-fAD"/>
                     </connections>
                 </viewController>
